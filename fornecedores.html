@@ -46,8 +46,8 @@
         document.getElementById("btnSalvarF").onclick = async () => {
             await addDoc(collection(db, "fornecedores"), {
                 nome: document.getElementById("nomeF").value,
-                cnpj: document.getElementById("cnpjF").value
-                email: document.getElementById("emailF").value
+                cnpj: document.getElementById("cnpjF").value,
+                email: document.getElementById("emailF").value,
                 telefone: document.getElementById("telefoneF").value
             });
             location.reload();
