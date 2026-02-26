@@ -22,6 +22,7 @@ async function listarProdutos() {
     try {
         // Busca Produtos e Volumes
         const prodSnap = await getDocs(query(collection(db, "produtos"), orderBy("nome", "asc")));
+        const prodSnap = await getDocs(query(collection(db, "fornecedor"), orderBy("nome", "asc")));        
         const volSnap = await getDocs(collection(db, "volumes"));
         
         const listaVolumes = volSnap.docs.map(d => ({ id: d.id, ...d.data() }));
