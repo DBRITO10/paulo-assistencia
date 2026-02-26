@@ -2,85 +2,164 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Estoque Simonetti - Gestão de Pulmão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simonetti - Gestão de Pulmão</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Estilos Adicionais para Refinamento */
-    .user-info { display: flex; align-items: center; gap: 15px; }
-    .search-container { margin: 20px 0; display: flex; gap: 10px; }
-    .search-container input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; }
-    .sub-item { background-color: #fcfcfc !important; font-size: 0.95em; }
-    .indent { padding-left: 40px; color: #666; font-style: italic; }
-    .status-ocioso { color: #d9534f; font-weight: bold; }
-    .status-bom { color: #5cb85c; }
-    .btn-action { padding: 5px 10px; font-size: 12px; margin: 2px; border-radius: 4px; }
-    .btn-edit { background: #f0ad4e; color: white; }
-    .btn-add { background: #5cb85c; color: white; }
-    .btn-out { background: #d9534f; color: white; }
-    
-    /* Ajuste no Modal para ser mais profissional */
-    .modal-content { border-top: 5px solid #007bff; }
-    .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+    :root {
+      --primary: #004a99;
+      --secondary: #6c757d;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --light: #f8f9fa;
+      --dark: #343a40;
+    }
+
+    body { background-color: #f0f2f5; margin: 0; padding-bottom: 50px; }
+
+    /* Navbar Responsiva */
+    .navbar {
+      display: flex;
+      flex-direction: column;
+      background: var(--primary);
+      color: white;
+      padding: 1rem;
+      gap: 10px;
+    }
+
+    @media (min-width: 768px) {
+      .navbar { flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+
+    .user-box { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+
+    /* Container de Busca Elegante */
+    .search-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #f0f2f5;
+      padding: 15px 0;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 30px;
+      border: 2px solid var(--primary);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    /* Tabela e Cards Responsivos */
+    .product-group {
+      background: white;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .prod-header {
+      background: #e9ecef;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 5px solid var(--primary);
+    }
+
+    .vol-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      padding: 10px 15px;
+      border-top: 1px solid #eee;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .vol-row { grid-template-columns: 1fr; border-bottom: 4px solid #f0f2f5; }
+      .vol-actions { display: flex; justify-content: space-around; }
+    }
+
+    /* Modal Centralizado e Elegante */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 450px;
+      position: relative;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header { border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    .btn { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-warning { background: var(--warning); color: var(--dark); }
+
+    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; }
+    .badge-red { background: #ffd7d7; color: #d9534f; }
+    .badge-green { background: #e2ffd7; color: #5cb85c; }
   </style>
 </head>
 <body>
+
   <div class="navbar">
-    <div class="user-info">
-      <a href="dashboard.html"><button style="background: #6c757d;">← Voltar</button></a>
-      <span id="saudacaoUsuario">Olá, Usuário</span>
+    <div class="user-box">
+      <a href="dashboard.html" style="color:white; text-decoration:none;"><strong>← Voltar</strong></a>
+      <span id="userNameDisplay">Olá, Carregando...</span>
     </div>
-    <h2>Estoque de Assistência</h2>
-    <button onclick="logout()" style="background: #dc3545;">Sair</button>
+    <div style="font-weight: bold; font-size: 1.2rem;">Assistência Simonetti</div>
+    <button class="btn btn-danger" onclick="logout()">Sair</button>
   </div>
 
   <div class="content">
-    <div id="cadastroProduto" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-      <h3>Cadastrar Novo Produto Principal</h3>
-      <div style="display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 10px; align-items: end;">
-        <div>
-          <label>Código (SKU)</label>
-          <input type="text" id="cod" placeholder="Ex: G-001">
-        </div>
-        <div>
-          <label>Descrição do Produto</label>
-          <input type="text" id="nome" placeholder="Ex: Guarda-Roupa 6 Portas">
-        </div>
-        <div>
-          <label>Fornecedor</label>
-          <select id="selectFornecedor"><option value="">Carregando...</option></select>
-        </div>
-        <button id="btnSalvar" style="margin-top:0; height: 45px;">Salvar Produto</button>
+    
+    <div class="search-bar">
+      <input type="text" id="mainSearch" placeholder="🔍 Buscar por Produto ou Volume..." onkeyup="filtrarEstoque()">
+    </div>
+
+    <div id="listaEstoque">
       </div>
-    </div>
 
-    <div class="search-container">
-      <input type="text" id="inputBusca" placeholder="🔍 Buscar por nome ou código do produto..." onkeyup="filtrarTabela()">
-    </div>
-
-    <table id="tabelaProdutos">
-      <thead>
-        <tr>
-          <th>Código / Descrição</th>
-          <th>Qtd em Estoque</th>
-          <th>Tempo (Ociosidade)</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        </tbody>
-    </table>
   </div>
 
-  <div id="modalAcao" class="modal">
+  <div id="modalMestre" class="modal">
     <div class="modal-content">
-      <span class="close" onclick="fecharModal()">&times;</span>
-      <h3 id="modalTitulo">Ação</h3>
-      <hr>
-      <div id="corpoModal">
+      <div class="modal-header">
+        <h3 id="modalTitulo">Título do Modal</h3>
+      </div>
+      <div id="modalCorpo">
         </div>
       <div class="modal-footer">
-        <button onclick="fecharModal()" style="background: #6c757d;">Cancelar</button>
-        <button id="btnConfirmarAcao">Confirmar</button>
+        <button class="btn" onclick="fecharModal()" style="background:#ccc">Cancelar</button>
+        <button id="btnConfirmar" class="btn btn-primary">Confirmar</button>
       </div>
     </div>
   </div>
@@ -88,176 +167,168 @@
   <script type="module">
     import { db, auth } from "./js/firebase-config.js";
     import { 
-      collection, addDoc, getDocs, serverTimestamp, doc, updateDoc, increment, deleteDoc, query, orderBy 
+      collection, addDoc, getDocs, serverTimestamp, doc, updateDoc, increment, query, orderBy, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    let volumeSelecionadoId = null;
-    let produtoSelecionadoId = null;
+    let volumeAtual = null;
+    let produtoAtual = null;
 
-    // --- Inicialização ---
+    // 1. Identificação do Usuário
     onAuthStateChanged(auth, user => {
       if (user) {
-        const nomeUser = localStorage.getItem("username") || user.email.split('@')[0];
-        document.getElementById("saudacaoUsuario").innerText = `Bem-vindo, ${nomeUser}`;
+        document.getElementById("userNameDisplay").innerText = `Olá, ${user.email.split('@')[0]}`;
+        carregarEstoque();
       } else {
         window.location.href = "index.html";
       }
     });
 
-    async function carregarFornecedores() {
-      const snap = await getDocs(collection(db, "fornecedores"));
-      const select = document.getElementById("selectFornecedor");
-      select.innerHTML = '<option value="">Selecione o Fornecedor</option>';
-      snap.forEach(d => select.innerHTML += `<option value="${d.id}">${d.data().nome}</option>`);
-    }
+    // 2. Carregar Dados (Produto + Volumes juntos)
+    async function carregarEstoque() {
+      const container = document.getElementById("listaEstoque");
+      container.innerHTML = "<p>Sincronizando com Firestore...</p>";
 
-    // --- CRUD Produto ---
-    document.getElementById("btnSalvar").onclick = async () => {
-      const nome = document.getElementById("nome").value;
-      const fornecedor = document.getElementById("selectFornecedor").value;
-      if (!nome || !fornecedor) return alert("Preencha Nome e Fornecedor!");
+      try {
+        const prodSnap = await getDocs(query(collection(db, "produtos"), orderBy("nome", "asc")));
+        const volSnap = await getDocs(collection(db, "volumes"));
+        const listaVols = volSnap.docs.map(d => ({id: d.id, ...d.data()}));
 
-      await addDoc(collection(db, "produtos"), {
-        codigo: document.getElementById("cod").value,
-        nome: nome,
-        fornecedorId: fornecedor,
-        dataCadastro: serverTimestamp()
-      });
-      location.reload();
-    };
+        container.innerHTML = "";
 
-    window.editarProduto = async (id, nomeAtual, codAtual) => {
-      const novoNome = prompt("Novo nome do produto:", nomeAtual);
-      const novoCod = prompt("Novo código:", codAtual);
-      if (novoNome) {
-        await updateDoc(doc(db, "produtos", id), { nome: novoNome, codigo: novoCod });
-        listarTudo();
-      }
-    };
+        prodSnap.forEach(docP => {
+          const p = docP.data();
+          const pId = docP.id;
+          const volumesDoProduto = listaVols.filter(v => v.produtoId === pId);
 
-    // --- Gestão de Volumes (Pulmão) ---
-    async function listarTudo() {
-      const prodSnap = await getDocs(query(collection(db, "produtos"), orderBy("dataCadastro", "desc")));
-      const volSnap = await getDocs(collection(db, "volumes"));
-      const listaVolumes = volSnap.docs.map(d => ({id: d.id, ...d.data()}));
-      const corpo = document.querySelector("#tabelaProdutos tbody");
-      corpo.innerHTML = "";
+          let htmlGrupo = `
+            <div class="product-group" data-search="${p.nome.toLowerCase()} ${p.codigo.toLowerCase()}">
+              <div class="prod-header">
+                <div><strong>${p.codigo}</strong> - ${p.nome}</div>
+                <button class="btn btn-sm btn-primary" onclick="window.modalNovoVolume('${pId}', '${p.nome}')">+ Volume</button>
+              </div>
+          `;
 
-      prodSnap.forEach(docP => {
-        const p = docP.data();
-        corpo.innerHTML += `
-          <tr style="background:#f4f4f4; font-weight:bold;">
-            <td>${p.codigo || 'S/C'} - ${p.nome}</td>
-            <td>--</td>
-            <td>--</td>
-            <td>
-              <button class="btn-action btn-add" onclick="abrirModalVolume('${docP.id}', '${p.nome}')">+ Volume</button>
-              <button class="btn-action btn-edit" onclick="editarProduto('${docP.id}', '${p.nome}', '${p.codigo}')">✏️</button>
-            </td>
-          </tr>`;
+          volumesDoProduto.forEach(v => {
+            const dias = v.ultimaMovimentacao ? Math.floor((new Date() - v.ultimaMovimentacao.toDate())/(1000*60*60*24)) : 0;
+            const badge = dias > 30 ? 'badge-red' : 'badge-green';
+            
+            htmlGrupo += `
+              <div class="vol-row" data-search-vol="${v.descricao.toLowerCase()}">
+                <div class="indent">↳ ${v.descricao}</div>
+                <div><strong>${v.quantidade}</strong> un</div>
+                <div><span class="status-badge ${badge}">${dias} dias parado</span></div>
+                <div class="vol-actions">
+                  <button class="btn btn-sm btn-success" onclick="window.movimentar('${v.id}', '${v.descricao}', 'Entrada')">▲</button>
+                  <button class="btn btn-sm btn-danger" onclick="window.movimentar('${v.id}', '${v.descricao}', 'Saída')">▼</button>
+                  <button class="btn btn-sm btn-warning" onclick="window.editarVolume('${v.id}', '${v.descricao}')">✎</button>
+                </div>
+              </div>
+            `;
+          });
 
-        listaVolumes.filter(v => v.produtoId === docP.id).forEach(v => {
-          const dias = v.ultimaMovimentacao ? Math.floor((new Date() - v.ultimaMovimentacao.toDate())/(1000*60*60*24)) : 0;
-          corpo.innerHTML += `
-            <tr class="sub-item">
-              <td class="indent">↳ ${v.descricao}</td>
-              <td><strong>${v.quantidade}</strong> un</td>
-              <td class="${dias > 30 ? 'status-ocioso' : 'status-bom'}">${dias} dias em estoque</td>
-              <td>
-                <button class="btn-action btn-add" onclick="movimentarEstoque('${v.id}', '${v.descricao}', 'Entrada')">▲ Entrada</button>
-                <button class="btn-action btn-out" onclick="movimentarEstoque('${v.id}', '${v.descricao}', 'Saída')">▼ Saída</button>
-                <button class="btn-action btn-edit" onclick="editarVolume('${v.id}', '${v.descricao}')">⚙️</button>
-              </td>
-            </tr>`;
+          htmlGrupo += `</div>`;
+          container.innerHTML += htmlGrupo;
         });
-      });
+      } catch (e) {
+        console.error(e);
+      }
     }
 
-    // --- Modais e Movimentação ---
-    window.abrirModalVolume = (idProd, nomeProd) => {
-      produtoSelecionadoId = idProd;
-      document.getElementById("modalTitulo").innerText = `Adicionar Volume em: ${nomeProd}`;
-      document.getElementById("corpoModal").innerHTML = `
-        <input type="text" id="volDesc" placeholder="Descrição (ex: Volume 1/2 - Tampo)" style="width:100%">
-        <input type="number" id="volQtd" placeholder="Quantidade Inicial" style="width:100%">
-      `;
-      document.getElementById("btnConfirmarAcao").onclick = salvarNovoVolume;
-      document.getElementById("modalAcao").style.display = "flex";
-    };
+    // 3. Sistema de Busca Inteligente (Mantém o Produto visível se o Volume for achado)
+    window.filtrarEstoque = () => {
+      const termo = document.getElementById("mainSearch").value.toLowerCase();
+      const grupos = document.querySelectorAll(".product-group");
 
-    const salvarNovoVolume = async () => {
-      const desc = document.getElementById("volDesc").value;
-      const qtd = parseInt(document.getElementById("volQtd").value);
-      if(!desc || isNaN(qtd)) return alert("Dados inválidos!");
+      grupos.forEach(grupo => {
+        const textoProduto = grupo.getAttribute("data-search");
+        const volumes = grupo.querySelectorAll(".vol-row");
+        let produtoVisivel = textoProduto.includes(termo);
+        let algumVolumeVisivel = false;
 
-      await addDoc(collection(db, "volumes"), {
-        produtoId: produtoSelecionadoId,
-        descricao: desc,
-        quantidade: qtd,
-        ultimaMovimentacao: serverTimestamp()
+        volumes.forEach(vol => {
+          const textoVol = vol.getAttribute("data-search-vol");
+          if (textoVol.includes(termo) || textoProduto.includes(termo)) {
+            vol.style.display = "grid";
+            algumVolumeVisivel = true;
+          } else {
+            vol.style.display = "none";
+          }
+        });
+
+        grupo.style.display = (produtoVisivel || algumVolumeVisivel) ? "block" : "none";
       });
-      fecharModal();
-      listarTudo();
     };
 
-    window.movimentarEstoque = (idVol, desc, tipo) => {
-      volumeSelecionadoId = idVol;
+    // 4. Modais Centralizados Profissionais
+    window.movimentar = (id, desc, tipo) => {
+      volumeAtual = id;
       document.getElementById("modalTitulo").innerText = `${tipo}: ${desc}`;
-      document.getElementById("corpoModal").innerHTML = `
-        <p>Informe a quantidade para ${tipo.toLowerCase()}:</p>
-        <input type="number" id="movQtd" placeholder="Quantidade" style="width:100%; font-size: 20px; text-align: center;">
+      document.getElementById("modalCorpo").innerHTML = `
+        <label>Quantidade:</label>
+        <input type="number" id="qtdMov" style="width:100%; font-size:24px; text-align:center; padding:10px;" autofocus>
       `;
-      document.getElementById("btnConfirmarAcao").onclick = () => confirmarMovimentacao(tipo, desc);
-      document.getElementById("modalAcao").style.display = "flex";
+      document.getElementById("btnConfirmar").onclick = () => processarMovimentacao(tipo, desc);
+      abrirModal();
     };
 
-    const confirmarMovimentacao = async (tipo, desc) => {
-      const qtd = parseInt(document.getElementById("movQtd").value);
-      if(!qtd || qtd <= 0) return alert("Quantidade inválida!");
+    const processarMovimentacao = async (tipo, desc) => {
+      const qtd = parseInt(document.getElementById("qtdMov").value);
+      if(!qtd || qtd <= 0) return;
 
-      const ajuste = tipo === 'Saída' ? -qtd : qtd;
-      await updateDoc(doc(db, "volumes", volumeSelecionadoId), {
-        quantidade: increment(ajuste),
+      const vRef = doc(db, "volumes", volumeAtual);
+      await updateDoc(vRef, {
+        quantidade: increment(tipo === 'Saída' ? -qtd : qtd),
         ultimaMovimentacao: serverTimestamp()
       });
 
-      // Histórico Automático
       await addDoc(collection(db, "movimentacoes"), {
-        produto: desc,
-        tipo: tipo,
-        quantidade: qtd,
-        usuario: auth.currentUser.email,
-        data: serverTimestamp()
+        produto: desc, tipo, quantidade: qtd, usuario: auth.currentUser.email, data: serverTimestamp()
       });
 
       fecharModal();
-      listarTudo();
+      carregarEstoque();
     };
 
-    window.editarVolume = async (id, descAtual) => {
-      const novaDesc = prompt("Nova descrição do volume:", descAtual);
-      if(novaDesc) {
-        await updateDoc(doc(db, "volumes", id), { descricao: novaDesc });
-        listarTudo();
-      }
+    window.editarVolume = (id, desc) => {
+      volumeAtual = id;
+      document.getElementById("modalTitulo").innerText = `Editar Nome do Volume`;
+      document.getElementById("modalCorpo").innerHTML = `
+        <input type="text" id="novoNomeVol" value="${desc}" style="width:100%; padding:10px;">
+      `;
+      document.getElementById("btnConfirmar").onclick = async () => {
+        const novo = document.getElementById("novoNomeVol").value;
+        await updateDoc(doc(db, "volumes", volumeAtual), { descricao: novo });
+        fecharModal();
+        carregarEstoque();
+      };
+      abrirModal();
     };
 
-    window.fecharModal = () => document.getElementById("modalAcao").style.display = "none";
+    window.modalNovoVolume = (pId, pNome) => {
+        produtoAtual = pId;
+        document.getElementById("modalTitulo").innerText = `Novo Volume: ${pNome}`;
+        document.getElementById("modalCorpo").innerHTML = `
+            <input type="text" id="nvDesc" placeholder="Descrição (ex: Volume 1/2)" style="width:100%; margin-bottom:10px; padding:10px;">
+            <input type="number" id="nvQtd" placeholder="Quantidade inicial" style="width:100%; padding:10px;">
+        `;
+        document.getElementById("btnConfirmar").onclick = async () => {
+            const d = document.getElementById("nvDesc").value;
+            const q = parseInt(document.getElementById("nvQtd").value);
+            await addDoc(collection(db, "volumes"), {
+                produtoId: produtoAtual, descricao: d, quantidade: q, ultimaMovimentacao: serverTimestamp()
+            });
+            fecharModal();
+            carregarEstoque();
+        };
+        abrirModal();
+    }
 
-    window.filtrarTabela = () => {
-      const termo = document.getElementById("inputBusca").value.toLowerCase();
-      const linhas = document.querySelectorAll("#tabelaProdutos tbody tr");
-      linhas.forEach(linha => {
-        const texto = linha.innerText.toLowerCase();
-        linha.style.display = texto.includes(termo) ? "" : "none";
-      });
-    };
-
+    // Helpers UI
+    const abrirModal = () => document.getElementById("modalMestre").style.display = "flex";
+    window.fecharModal = () => document.getElementById("modalMestre").style.display = "none";
     window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
 
-    carregarFornecedores();
-    listarTudo();
   </script>
 </body>
 </html>
