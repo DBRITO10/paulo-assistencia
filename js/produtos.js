@@ -17,7 +17,7 @@ async function listarProdutos() {
     const corpoTabela = document.querySelector("#tabelaProdutos tbody");
     if (!corpoTabela) return;
 
-    corpoTabela.innerHTML = "<tr><td colspan='4'>Carregando estoque...</td></tr>";
+    corpoTabela.innerHTML = "<tr><td colspan='5'>Carregando estoque...</td></tr>";
 
     try {
         // Busca Produtos e Volumes
