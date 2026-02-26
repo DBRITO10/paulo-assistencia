@@ -2,75 +2,143 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Produtos e Volumes - Simonetti</title>
+  <title>Estoque Simonetti - Gestão de Pulmão</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .sub-item { background-color: #f9f9f9 !important; font-size: 0.9em; }
-    .indent { padding-left: 30px; color: #555; }
-    .status-ocioso { color: red; font-weight: bold; }
-    .status-bom { color: green; }
+    /* Estilos Adicionais para Refinamento */
+    .user-info { display: flex; align-items: center; gap: 15px; }
+    .search-container { margin: 20px 0; display: flex; gap: 10px; }
+    .search-container input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; }
+    .sub-item { background-color: #fcfcfc !important; font-size: 0.95em; }
+    .indent { padding-left: 40px; color: #666; font-style: italic; }
+    .status-ocioso { color: #d9534f; font-weight: bold; }
+    .status-bom { color: #5cb85c; }
+    .btn-action { padding: 5px 10px; font-size: 12px; margin: 2px; border-radius: 4px; }
+    .btn-edit { background: #f0ad4e; color: white; }
+    .btn-add { background: #5cb85c; color: white; }
+    .btn-out { background: #d9534f; color: white; }
+    
+    /* Ajuste no Modal para ser mais profissional */
+    .modal-content { border-top: 5px solid #007bff; }
+    .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
   </style>
 </head>
 <body>
   <div class="navbar">
-    <h2>Estoque de Assistência (Pulmão)</h2>
-    <div>
-      <a href="fornecedores.html"><button>Fornecedores</button></a>
-      <a href="dashboard.html"><button>Voltar</button></a>
+    <div class="user-info">
+      <a href="dashboard.html"><button style="background: #6c757d;">← Voltar</button></a>
+      <span id="saudacaoUsuario">Olá, Usuário</span>
     </div>
+    <h2>Estoque de Assistência</h2>
+    <button onclick="logout()" style="background: #dc3545;">Sair</button>
   </div>
 
   <div class="content">
-    <div id="cadastroProduto">
-      <h3>Cadastrar Produto Principal</h3>
-      <input type="text" id="cod" placeholder="Código (SKU)">
-      <input type="text" id="nome" placeholder="Descrição do Produto">
-      <select id="selectFornecedor"><option value="">Carregando Fornecedores...</option></select>
-      <button id="btnSalvar">Salvar Produto</button>
+    <div id="cadastroProduto" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+      <h3>Cadastrar Novo Produto Principal</h3>
+      <div style="display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 10px; align-items: end;">
+        <div>
+          <label>Código (SKU)</label>
+          <input type="text" id="cod" placeholder="Ex: G-001">
+        </div>
+        <div>
+          <label>Descrição do Produto</label>
+          <input type="text" id="nome" placeholder="Ex: Guarda-Roupa 6 Portas">
+        </div>
+        <div>
+          <label>Fornecedor</label>
+          <select id="selectFornecedor"><option value="">Carregando...</option></select>
+        </div>
+        <button id="btnSalvar" style="margin-top:0; height: 45px;">Salvar Produto</button>
+      </div>
+    </div>
+
+    <div class="search-container">
+      <input type="text" id="inputBusca" placeholder="🔍 Buscar por nome ou código do produto..." onkeyup="filtrarTabela()">
     </div>
 
     <table id="tabelaProdutos">
       <thead>
         <tr>
           <th>Código / Descrição</th>
-          <th>Qtd / Volume</th>
-          <th>Tempo em Estoque</th>
+          <th>Qtd em Estoque</th>
+          <th>Tempo (Ociosidade)</th>
           <th>Ações</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        </tbody>
     </table>
   </div>
 
-  <script type="module">
-    import { db } from "./js/firebase-config.js";
-    import { collection, addDoc, getDocs, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  <div id="modalAcao" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="fecharModal()">&times;</span>
+      <h3 id="modalTitulo">Ação</h3>
+      <hr>
+      <div id="corpoModal">
+        </div>
+      <div class="modal-footer">
+        <button onclick="fecharModal()" style="background: #6c757d;">Cancelar</button>
+        <button id="btnConfirmarAcao">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-    // 1. Carregar Fornecedores no Select
+  <script type="module">
+    import { db, auth } from "./js/firebase-config.js";
+    import { 
+      collection, addDoc, getDocs, serverTimestamp, doc, updateDoc, increment, deleteDoc, query, orderBy 
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    let volumeSelecionadoId = null;
+    let produtoSelecionadoId = null;
+
+    // --- Inicialização ---
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const nomeUser = localStorage.getItem("username") || user.email.split('@')[0];
+        document.getElementById("saudacaoUsuario").innerText = `Bem-vindo, ${nomeUser}`;
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
     async function carregarFornecedores() {
       const snap = await getDocs(collection(db, "fornecedores"));
       const select = document.getElementById("selectFornecedor");
       select.innerHTML = '<option value="">Selecione o Fornecedor</option>';
-      snap.forEach(doc => {
-        select.innerHTML += `<option value="${doc.id}">${doc.data().nome}</option>`;
-      });
+      snap.forEach(d => select.innerHTML += `<option value="${d.id}">${d.data().nome}</option>`);
     }
 
-    // 2. Salvar Produto
+    // --- CRUD Produto ---
     document.getElementById("btnSalvar").onclick = async () => {
-      const dados = {
+      const nome = document.getElementById("nome").value;
+      const fornecedor = document.getElementById("selectFornecedor").value;
+      if (!nome || !fornecedor) return alert("Preencha Nome e Fornecedor!");
+
+      await addDoc(collection(db, "produtos"), {
         codigo: document.getElementById("cod").value,
-        nome: document.getElementById("nome").value,
-        fornecedorId: document.getElementById("selectFornecedor").value,
+        nome: nome,
+        fornecedorId: fornecedor,
         dataCadastro: serverTimestamp()
-      };
-      await addDoc(collection(db, "produtos"), dados);
+      });
       location.reload();
     };
 
-    // 3. Listar Produtos e Volumes (Aninhados)
+    window.editarProduto = async (id, nomeAtual, codAtual) => {
+      const novoNome = prompt("Novo nome do produto:", nomeAtual);
+      const novoCod = prompt("Novo código:", codAtual);
+      if (novoNome) {
+        await updateDoc(doc(db, "produtos", id), { nome: novoNome, codigo: novoCod });
+        listarTudo();
+      }
+    };
+
+    // --- Gestão de Volumes (Pulmão) ---
     async function listarTudo() {
-      const prodSnap = await getDocs(collection(db, "produtos"));
+      const prodSnap = await getDocs(query(collection(db, "produtos"), orderBy("dataCadastro", "desc")));
       const volSnap = await getDocs(collection(db, "volumes"));
       const listaVolumes = volSnap.docs.map(d => ({id: d.id, ...d.data()}));
       const corpo = document.querySelector("#tabelaProdutos tbody");
@@ -79,40 +147,114 @@
       prodSnap.forEach(docP => {
         const p = docP.data();
         corpo.innerHTML += `
-          <tr style="background:#eee; font-weight:bold;">
-            <td>${p.codigo} - ${p.nome}</td>
+          <tr style="background:#f4f4f4; font-weight:bold;">
+            <td>${p.codigo || 'S/C'} - ${p.nome}</td>
             <td>--</td>
             <td>--</td>
-            <td><button onclick="addVolume('${docP.id}', '${p.nome}')">Incluir Volume</button></td>
+            <td>
+              <button class="btn-action btn-add" onclick="abrirModalVolume('${docP.id}', '${p.nome}')">+ Volume</button>
+              <button class="btn-action btn-edit" onclick="editarProduto('${docP.id}', '${p.nome}', '${p.codigo}')">✏️</button>
+            </td>
           </tr>`;
 
-        const vols = listaVolumes.filter(v => v.produtoId === docP.id);
-        vols.forEach(v => {
+        listaVolumes.filter(v => v.produtoId === docP.id).forEach(v => {
           const dias = v.ultimaMovimentacao ? Math.floor((new Date() - v.ultimaMovimentacao.toDate())/(1000*60*60*24)) : 0;
           corpo.innerHTML += `
             <tr class="sub-item">
               <td class="indent">↳ ${v.descricao}</td>
-              <td>${v.quantidade} un</td>
-              <td class="${dias > 30 ? 'status-ocioso' : 'status-bom'}">${dias} dias parado</td>
-              <td><button>Saída</button></td>
+              <td><strong>${v.quantidade}</strong> un</td>
+              <td class="${dias > 30 ? 'status-ocioso' : 'status-bom'}">${dias} dias em estoque</td>
+              <td>
+                <button class="btn-action btn-add" onclick="movimentarEstoque('${v.id}', '${v.descricao}', 'Entrada')">▲ Entrada</button>
+                <button class="btn-action btn-out" onclick="movimentarEstoque('${v.id}', '${v.descricao}', 'Saída')">▼ Saída</button>
+                <button class="btn-action btn-edit" onclick="editarVolume('${v.id}', '${v.descricao}')">⚙️</button>
+              </td>
             </tr>`;
         });
       });
     }
 
-    window.addVolume = async (id, nome) => {
-      const desc = prompt(`Descrição do Volume para ${nome} (ex: Volume 1/2):`);
-      const qtd = prompt("Quantidade:");
-      if(desc && qtd) {
-        await addDoc(collection(db, "volumes"), {
-          produtoId: id,
-          descricao: desc,
-          quantidade: parseInt(qtd),
-          ultimaMovimentacao: serverTimestamp()
-        });
-        location.reload();
+    // --- Modais e Movimentação ---
+    window.abrirModalVolume = (idProd, nomeProd) => {
+      produtoSelecionadoId = idProd;
+      document.getElementById("modalTitulo").innerText = `Adicionar Volume em: ${nomeProd}`;
+      document.getElementById("corpoModal").innerHTML = `
+        <input type="text" id="volDesc" placeholder="Descrição (ex: Volume 1/2 - Tampo)" style="width:100%">
+        <input type="number" id="volQtd" placeholder="Quantidade Inicial" style="width:100%">
+      `;
+      document.getElementById("btnConfirmarAcao").onclick = salvarNovoVolume;
+      document.getElementById("modalAcao").style.display = "flex";
+    };
+
+    const salvarNovoVolume = async () => {
+      const desc = document.getElementById("volDesc").value;
+      const qtd = parseInt(document.getElementById("volQtd").value);
+      if(!desc || isNaN(qtd)) return alert("Dados inválidos!");
+
+      await addDoc(collection(db, "volumes"), {
+        produtoId: produtoSelecionadoId,
+        descricao: desc,
+        quantidade: qtd,
+        ultimaMovimentacao: serverTimestamp()
+      });
+      fecharModal();
+      listarTudo();
+    };
+
+    window.movimentarEstoque = (idVol, desc, tipo) => {
+      volumeSelecionadoId = idVol;
+      document.getElementById("modalTitulo").innerText = `${tipo}: ${desc}`;
+      document.getElementById("corpoModal").innerHTML = `
+        <p>Informe a quantidade para ${tipo.toLowerCase()}:</p>
+        <input type="number" id="movQtd" placeholder="Quantidade" style="width:100%; font-size: 20px; text-align: center;">
+      `;
+      document.getElementById("btnConfirmarAcao").onclick = () => confirmarMovimentacao(tipo, desc);
+      document.getElementById("modalAcao").style.display = "flex";
+    };
+
+    const confirmarMovimentacao = async (tipo, desc) => {
+      const qtd = parseInt(document.getElementById("movQtd").value);
+      if(!qtd || qtd <= 0) return alert("Quantidade inválida!");
+
+      const ajuste = tipo === 'Saída' ? -qtd : qtd;
+      await updateDoc(doc(db, "volumes", volumeSelecionadoId), {
+        quantidade: increment(ajuste),
+        ultimaMovimentacao: serverTimestamp()
+      });
+
+      // Histórico Automático
+      await addDoc(collection(db, "movimentacoes"), {
+        produto: desc,
+        tipo: tipo,
+        quantidade: qtd,
+        usuario: auth.currentUser.email,
+        data: serverTimestamp()
+      });
+
+      fecharModal();
+      listarTudo();
+    };
+
+    window.editarVolume = async (id, descAtual) => {
+      const novaDesc = prompt("Nova descrição do volume:", descAtual);
+      if(novaDesc) {
+        await updateDoc(doc(db, "volumes", id), { descricao: novaDesc });
+        listarTudo();
       }
     };
+
+    window.fecharModal = () => document.getElementById("modalAcao").style.display = "none";
+
+    window.filtrarTabela = () => {
+      const termo = document.getElementById("inputBusca").value.toLowerCase();
+      const linhas = document.querySelectorAll("#tabelaProdutos tbody tr");
+      linhas.forEach(linha => {
+        const texto = linha.innerText.toLowerCase();
+        linha.style.display = texto.includes(termo) ? "" : "none";
+      });
+    };
+
+    window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
 
     carregarFornecedores();
     listarTudo();
