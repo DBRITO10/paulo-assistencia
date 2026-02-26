@@ -10,6 +10,8 @@ async function checarFornecedores() {
         await addDoc(colRef, {
             nome: "Fornecedor Geral Simonetti",
             cnpj: "00.000.000/0001-00",
+            email: "email@dominio.com",
+            telefone: "(00) 00000-0000",
             dataCriacao: new Date()
         });
         location.reload();
