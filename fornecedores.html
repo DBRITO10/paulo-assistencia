@@ -23,7 +23,7 @@
 
         <table>
             <thead>
-                <tr><th>Nome</th><th>CNPJ</th><th>E=mail</th><th>Telefone</th><th>Ações</th></tr>
+                <tr><th>Nome</th><th>CNPJ</th><th>E-mail</th><th>Telefone</th><th>Ações</th></tr>
             </thead>
             <tbody id="listaF"></tbody>
         </table>
@@ -36,6 +36,8 @@
         const carregar = async () => {
             const snap = await getDocs(collection(db, "fornecedores"));
             const tbody = document.getElementById("listaF");
+            const tbody = document.getElementById("emailF");
+            const tbody = document.getElementById("telefoneF");
             tbody.innerHTML = "";
             snap.forEach(d => {
                 tbody.innerHTML += `<tr><td>${d.data().nome}</td><td>${d.data().cnpj}</td>
