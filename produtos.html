@@ -8,186 +8,140 @@
   <style>
     :root {
       --primary: #004a99;
-      --secondary: #6c757d;
-      --success: #28a745;
       --danger: #dc3545;
-      --warning: #ffc107;
-      --light: #f8f9fa;
-      --dark: #343a40;
+      --success: #28a745;
     }
 
-    body { background-color: #f0f2f5; margin: 0; padding-bottom: 50px; }
+    body { background-color: #f0f2f5; margin: 0; font-family: 'Segoe UI', sans-serif; }
 
     /* Navbar Responsiva */
     .navbar {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
       background: var(--primary);
       color: white;
-      padding: 1rem;
+      padding: 10px 20px;
+      flex-wrap: wrap;
       gap: 10px;
     }
 
-    @media (min-width: 768px) {
-      .navbar { flex-direction: row; justify-content: space-between; align-items: center; }
-    }
+    .user-info { display: flex; align-items: center; gap: 15px; }
 
-    .user-box { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
-
-    /* Container de Busca Elegante */
-    .search-bar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: #f0f2f5;
-      padding: 15px 0;
-    }
-
-    .search-bar input {
+    /* Container de Busca */
+    .search-container { margin: 20px; }
+    .search-container input {
       width: 100%;
       padding: 15px;
       border-radius: 30px;
       border: 2px solid var(--primary);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      font-size: 1rem;
+      box-sizing: border-box;
+      font-size: 16px;
       outline: none;
     }
 
-    /* Tabela e Cards Responsivos */
-    .product-group {
-      background: white;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+    /* Tabela e Grupos */
+    .product-group { background: white; margin: 0 20px 20px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; }
+    .prod-header { background: #e9ecef; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; border-left: 5px solid var(--primary); }
+    .vol-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; padding: 10px; border-top: 1px solid #eee; align-items: center; }
 
-    .prod-header {
-      background: #e9ecef;
-      padding: 12px 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-left: 5px solid var(--primary);
-    }
-
-    .vol-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto;
-      padding: 10px 15px;
-      border-top: 1px solid #eee;
-      align-items: center;
-      gap: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .vol-row { grid-template-columns: 1fr; border-bottom: 4px solid #f0f2f5; }
-      .vol-actions { display: flex; justify-content: space-around; }
+    @media (max-width: 768px) {
+      .vol-row { grid-template-columns: 1fr; gap: 10px; text-align: center; }
     }
 
     /* Modal Centralizado e Elegante */
     .modal {
       display: none;
       position: fixed;
-      z-index: 2000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
+      z-index: 9999;
+      left: 0; top: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(5px);
       align-items: center;
       justify-content: center;
     }
 
     .modal-content {
       background: white;
-      padding: 25px;
+      padding: 30px;
       border-radius: 15px;
       width: 90%;
       max-width: 450px;
-      position: relative;
-      animation: slideIn 0.3s ease-out;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: fadeIn 0.3s ease;
     }
 
-    @keyframes slideIn {
-      from { transform: translateY(-30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-    .modal-header { border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; }
+    .modal-header { border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; font-weight: bold; color: var(--primary); }
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 
-    .btn { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-success { background: var(--success); color: white; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-warning { background: var(--warning); color: var(--dark); }
+    input[type="number"], input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
 
-    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; }
-    .badge-red { background: #ffd7d7; color: #d9534f; }
-    .badge-green { background: #e2ffd7; color: #5cb85c; }
+    .btn { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-edit { background: #f0ad4e; color: white; padding: 5px 10px; font-size: 12px; }
   </style>
 </head>
 <body>
 
   <div class="navbar">
-    <div class="user-box">
-      <a href="dashboard.html" style="color:white; text-decoration:none;"><strong>← Voltar</strong></a>
-      <span id="userNameDisplay">Olá, Carregando...</span>
+    <div class="user-info">
+      <a href="dashboard.html"><button class="btn" style="background: #6c757d; color: white;">← Voltar</button></a>
+      <span id="txtSaudacao">Olá, Usuário</span>
     </div>
-    <div style="font-weight: bold; font-size: 1.2rem;">Assistência Simonetti</div>
+    <div style="font-weight: bold;">Móveis Simonetti</div>
     <button class="btn btn-danger" onclick="logout()">Sair</button>
   </div>
 
-  <div class="content">
-    
-    <div class="search-bar">
-      <input type="text" id="mainSearch" placeholder="🔍 Buscar por Produto ou Volume..." onkeyup="filtrarEstoque()">
-    </div>
-
-    <div id="listaEstoque">
-      </div>
-
+  <div class="search-container">
+    <input type="text" id="inputBusca" placeholder="🔍 Buscar por Produto ou Volume..." onkeyup="filtrarTudo()">
   </div>
+
+  <div id="listaEstoque">
+    </div>
 
   <div id="modalMestre" class="modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modalTitulo">Título do Modal</h3>
-      </div>
-      <div id="modalCorpo">
-        </div>
+      <div class="modal-header" id="modalTitulo">Ação</div>
+      <div id="modalCorpo"></div>
       <div class="modal-footer">
-        <button class="btn" onclick="fecharModal()" style="background:#ccc">Cancelar</button>
+        <button class="btn" onclick="fecharModal()" style="background:#bbb">Cancelar</button>
         <button id="btnConfirmar" class="btn btn-primary">Confirmar</button>
       </div>
     </div>
   </div>
 
   <script type="module">
+    // CORREÇÃO DOS IMPORTS
     import { db, auth } from "./js/firebase-config.js";
+    
+    // Funções de Autenticação (onAuthStateChanged VEM DAQUI)
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    
+    // Funções de Banco de Dados
     import { 
-      collection, addDoc, getDocs, serverTimestamp, doc, updateDoc, increment, query, orderBy, onAuthStateChanged 
+      collection, addDoc, getDocs, serverTimestamp, doc, updateDoc, increment, query, orderBy 
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    let volumeAtual = null;
-    let produtoAtual = null;
+    let idVolumeAtivo = null;
 
-    // 1. Identificação do Usuário
+    // Monitorar Usuário
     onAuthStateChanged(auth, user => {
       if (user) {
-        document.getElementById("userNameDisplay").innerText = `Olá, ${user.email.split('@')[0]}`;
-        carregarEstoque();
+        const nome = localStorage.getItem("username") || user.email.split('@')[0];
+        document.getElementById("txtSaudacao").innerText = `Bem-vindo, ${nome}`;
+        carregarDados();
       } else {
         window.location.href = "index.html";
       }
     });
 
-    // 2. Carregar Dados (Produto + Volumes juntos)
-    async function carregarEstoque() {
+    async function carregarDados() {
       const container = document.getElementById("listaEstoque");
-      container.innerHTML = "<p>Sincronizando com Firestore...</p>";
+      container.innerHTML = "<p style='text-align:center'>Carregando...</p>";
 
       try {
         const prodSnap = await getDocs(query(collection(db, "produtos"), orderBy("nome", "asc")));
@@ -195,88 +149,77 @@
         const listaVols = volSnap.docs.map(d => ({id: d.id, ...d.data()}));
 
         container.innerHTML = "";
-
         prodSnap.forEach(docP => {
           const p = docP.data();
           const pId = docP.id;
-          const volumesDoProduto = listaVols.filter(v => v.produtoId === pId);
+          const volsDoProduto = listaVols.filter(v => v.produtoId === pId);
 
-          let htmlGrupo = `
-            <div class="product-group" data-search="${p.nome.toLowerCase()} ${p.codigo.toLowerCase()}">
+          let html = `
+            <div class="product-group" data-nome="${p.nome.toLowerCase()} ${p.codigo.toLowerCase()}">
               <div class="prod-header">
-                <div><strong>${p.codigo}</strong> - ${p.nome}</div>
-                <button class="btn btn-sm btn-primary" onclick="window.modalNovoVolume('${pId}', '${p.nome}')">+ Volume</button>
+                <span>${p.codigo} - ${p.nome}</span>
+                <button class="btn-edit" onclick="window.addVolume('${pId}', '${p.nome}')">+ Volume</button>
               </div>
           `;
 
-          volumesDoProduto.forEach(v => {
-            const dias = v.ultimaMovimentacao ? Math.floor((new Date() - v.ultimaMovimentacao.toDate())/(1000*60*60*24)) : 0;
-            const badge = dias > 30 ? 'badge-red' : 'badge-green';
-            
-            htmlGrupo += `
-              <div class="vol-row" data-search-vol="${v.descricao.toLowerCase()}">
-                <div class="indent">↳ ${v.descricao}</div>
-                <div><strong>${v.quantidade}</strong> un</div>
-                <div><span class="status-badge ${badge}">${dias} dias parado</span></div>
-                <div class="vol-actions">
-                  <button class="btn btn-sm btn-success" onclick="window.movimentar('${v.id}', '${v.descricao}', 'Entrada')">▲</button>
-                  <button class="btn btn-sm btn-danger" onclick="window.movimentar('${v.id}', '${v.descricao}', 'Saída')">▼</button>
-                  <button class="btn btn-sm btn-warning" onclick="window.editarVolume('${v.id}', '${v.descricao}')">✎</button>
+          volsDoProduto.forEach(v => {
+            html += `
+              <div class="vol-row" data-vol="${v.descricao.toLowerCase()}">
+                <div style="padding-left: 20px;">↳ ${v.descricao}</div>
+                <div style="text-align:center"><strong>${v.quantidade}</strong> un</div>
+                <div style="text-align:center; font-size:12px; color:#777">Último giro: ${v.ultimaMovimentacao ? 'Recente' : '--'}</div>
+                <div style="display:flex; gap:5px; justify-content:center">
+                  <button class="btn btn-success" onclick="window.movimentar('${v.id}', '${v.descricao}', 'Entrada')">▲</button>
+                  <button class="btn btn-danger" onclick="window.movimentar('${v.id}', '${v.descricao}', 'Saída')">▼</button>
                 </div>
               </div>
             `;
           });
-
-          htmlGrupo += `</div>`;
-          container.innerHTML += htmlGrupo;
+          html += `</div>`;
+          container.innerHTML += html;
         });
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    // 3. Sistema de Busca Inteligente (Mantém o Produto visível se o Volume for achado)
-    window.filtrarEstoque = () => {
-      const termo = document.getElementById("mainSearch").value.toLowerCase();
+    // Busca inteligente: Se achar o volume, mostra o produto pai
+    window.filtrarTudo = () => {
+      const termo = document.getElementById("inputBusca").value.toLowerCase();
       const grupos = document.querySelectorAll(".product-group");
 
       grupos.forEach(grupo => {
-        const textoProduto = grupo.getAttribute("data-search");
-        const volumes = grupo.querySelectorAll(".vol-row");
-        let produtoVisivel = textoProduto.includes(termo);
-        let algumVolumeVisivel = false;
+        const nomeProd = grupo.getAttribute("data-nome");
+        const linhasVol = grupo.querySelectorAll(".vol-row");
+        let achouNoVolume = false;
 
-        volumes.forEach(vol => {
-          const textoVol = vol.getAttribute("data-search-vol");
-          if (textoVol.includes(termo) || textoProduto.includes(termo)) {
-            vol.style.display = "grid";
-            algumVolumeVisivel = true;
+        linhasVol.forEach(linha => {
+          const nomeVol = linha.getAttribute("data-vol");
+          if(nomeVol.includes(termo) || nomeProd.includes(termo)) {
+            linha.style.display = "grid";
+            achouNoVolume = true;
           } else {
-            vol.style.display = "none";
+            linha.style.display = "none";
           }
         });
-
-        grupo.style.display = (produtoVisivel || algumVolumeVisivel) ? "block" : "none";
+        grupo.style.display = (nomeProd.includes(termo) || achouNoVolume) ? "block" : "none";
       });
     };
 
-    // 4. Modais Centralizados Profissionais
     window.movimentar = (id, desc, tipo) => {
-      volumeAtual = id;
+      idVolumeAtivo = id;
       document.getElementById("modalTitulo").innerText = `${tipo}: ${desc}`;
       document.getElementById("modalCorpo").innerHTML = `
-        <label>Quantidade:</label>
-        <input type="number" id="qtdMov" style="width:100%; font-size:24px; text-align:center; padding:10px;" autofocus>
+        <p>Informe a quantidade para ${tipo.toLowerCase()}:</p>
+        <input type="number" id="qtdMov" placeholder="0" style="font-size: 20px; text-align:center">
       `;
-      document.getElementById("btnConfirmar").onclick = () => processarMovimentacao(tipo, desc);
-      abrirModal();
+      document.getElementById("btnConfirmar").onclick = () => salvarMov(tipo, desc);
+      document.getElementById("modalMestre").style.display = "flex";
     };
 
-    const processarMovimentacao = async (tipo, desc) => {
+    const salvarMov = async (tipo, desc) => {
       const qtd = parseInt(document.getElementById("qtdMov").value);
       if(!qtd || qtd <= 0) return;
 
-      const vRef = doc(db, "volumes", volumeAtual);
+      const vRef = doc(db, "volumes", idVolumeAtivo);
       await updateDoc(vRef, {
         quantidade: increment(tipo === 'Saída' ? -qtd : qtd),
         ultimaMovimentacao: serverTimestamp()
@@ -287,45 +230,27 @@
       });
 
       fecharModal();
-      carregarEstoque();
+      carregarDados();
     };
 
-    window.editarVolume = (id, desc) => {
-      volumeAtual = id;
-      document.getElementById("modalTitulo").innerText = `Editar Nome do Volume`;
+    window.addVolume = (pId, pNome) => {
+      document.getElementById("modalTitulo").innerText = `Novo Volume: ${pNome}`;
       document.getElementById("modalCorpo").innerHTML = `
-        <input type="text" id="novoNomeVol" value="${desc}" style="width:100%; padding:10px;">
+        <input type="text" id="nvDesc" placeholder="Descrição do Volume (ex: Lateral Dir.)">
+        <input type="number" id="nvQtd" placeholder="Quantidade inicial">
       `;
       document.getElementById("btnConfirmar").onclick = async () => {
-        const novo = document.getElementById("novoNomeVol").value;
-        await updateDoc(doc(db, "volumes", volumeAtual), { descricao: novo });
-        fecharModal();
-        carregarEstoque();
+        const d = document.getElementById("nvDesc").value;
+        const q = parseInt(document.getElementById("nvQtd").value);
+        if(d && q) {
+          await addDoc(collection(db, "volumes"), { produtoId: pId, descricao: d, quantidade: q, ultimaMovimentacao: serverTimestamp() });
+          fecharModal();
+          carregarDados();
+        }
       };
-      abrirModal();
+      document.getElementById("modalMestre").style.display = "flex";
     };
 
-    window.modalNovoVolume = (pId, pNome) => {
-        produtoAtual = pId;
-        document.getElementById("modalTitulo").innerText = `Novo Volume: ${pNome}`;
-        document.getElementById("modalCorpo").innerHTML = `
-            <input type="text" id="nvDesc" placeholder="Descrição (ex: Volume 1/2)" style="width:100%; margin-bottom:10px; padding:10px;">
-            <input type="number" id="nvQtd" placeholder="Quantidade inicial" style="width:100%; padding:10px;">
-        `;
-        document.getElementById("btnConfirmar").onclick = async () => {
-            const d = document.getElementById("nvDesc").value;
-            const q = parseInt(document.getElementById("nvQtd").value);
-            await addDoc(collection(db, "volumes"), {
-                produtoId: produtoAtual, descricao: d, quantidade: q, ultimaMovimentacao: serverTimestamp()
-            });
-            fecharModal();
-            carregarEstoque();
-        };
-        abrirModal();
-    }
-
-    // Helpers UI
-    const abrirModal = () => document.getElementById("modalMestre").style.display = "flex";
     window.fecharModal = () => document.getElementById("modalMestre").style.display = "none";
     window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
 
